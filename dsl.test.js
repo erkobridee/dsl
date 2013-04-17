@@ -20,23 +20,20 @@
       },
 
       init: function() {
-        var scriptUrl = 'http://code.angularjs.org/unknow/angular.js';
 
         actions.load(
-          'http://code.angularjs.org/unknow/angular.js',
-          actions.finish,
-          actions.load(
+          [
+            'http://code.angularjs.org/unknow/angular.js', 
             'http://code.angularjs.org/1.1.4/angular.js',
-            actions.finish,
-            function() {
-              alert('PANIC!');
-            }
-          )
+            '//cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.3/angular.js'
+          ],
+          actions.finish
         );
 
       }
     };
     
+    $DSL.DEBUG = true;
     actions.init();
 
   }

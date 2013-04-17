@@ -8,41 +8,78 @@
 
       function DSL() {};
 
+      DSL.DEBUG = false;
+
       // static
       DSL.load = function(scriptSrc, onSuccess, onError) {
 
-        // TODO: check scriptSrc typeof
-
-        var handlers = checkHandlers(scriptSrc, onSuccess, onError);
-
-        boot(scriptSrc, handlers.success, handlers.error);
+        if(typeof scriptSrc === 'string') {
+          
+          scriptSrcString(scriptSrc, onSuccess, onError);
+        
+        } else if((typeof scriptSrc === 'object') && (scriptSrc instanceof Array)) {
+          
+          scriptSrcArray(scriptSrc, onSuccess, onError);
+        
+        } else { console.log(scriptSrc + ' : unknown'); }
 
       }
 
       // private 
 
-      function checkHandlers(scriptSrc, onSuccess, onError) {
-        var handlers = {};
+      function scriptSrcString(scriptSrc, onSuccess, onError) {
 
-        if(typeof onSuccess === 'function') {
-          handlers.success = onSuccess;
-        } else {
-          handlers.success = function() {
-            console.log( scriptSrc + ' : success');
-          };
+        function localSuccess(msg) {
+          displayMsg(msg);
+          executeCallback(onSuccess);
         }
 
-        if(typeof onError === 'function') {
-          handlers.error = onError;
-        } else {
-          handlers.error = function() {
-            console.log( scriptSrc + ' : fail');
-          };
+        function localError(msg) {
+          displayMsg(msg);
+          executeCallback(onError);
         }
 
-        return handlers;
+        boot(scriptSrc, localSuccess, localError);
 
       }
+
+      function scriptSrcArray(scriptArr, onSuccess, onError) {
+        var i = 0
+          , length = scriptArr.length
+          ;
+
+        function loadScript() {
+          boot(scriptArr[i], localSuccess, localError);
+        }
+
+        function localSuccess(msg) {
+          displayMsg(msg);
+          executeCallback(onSuccess);
+        }
+
+        function localError(msg) {
+          displayMsg(msg);
+
+          if(i < length) {
+            i++;
+            loadScript();
+          } else {
+            executeCallback(onError);
+          }
+        }
+
+        loadScript();       
+
+      }
+
+      function displayMsg(msg) {
+        if(DSL.DEBUG && (typeof msg === 'string')) { console.log(msg); }        
+      }
+
+      function executeCallback(callback) {
+        if(typeof callback === 'function') { callback(); }
+      }
+
 
       function boot(scriptSrc, onSuccess, onError) {
 
@@ -69,19 +106,19 @@
             scriptElem.onreadystatechange = function() {
               if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
                 scriptElem.onreadystatechange = null;
-                onSuccess();
+                onSuccess( scriptElem.src + ' : success' );
               } else {
-                onError();
+                onError( scriptElem.src + ' : fail' );
               }
             };
           } else {  //Others            
             scriptElem.onload = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onSuccess();
+              onSuccess( scriptElem.src + ' : success' );
             };
             scriptElem.onerror = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onError();
+              onError( scriptElem.src + ' : fail' );
             }
           }
 
