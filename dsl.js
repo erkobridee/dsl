@@ -1,4 +1,3 @@
-// based on: https://gist.github.com/getify/603980
 (function(global, oDOC) {
 
   if(typeof global.$DSL === 'undefined') {
@@ -80,7 +79,7 @@
         if(typeof callback === 'function') { callback(); }
       }
 
-
+      // based on: https://gist.github.com/getify/603980
       function boot(scriptSrc, onSuccess, onError) {
 
         var handler
