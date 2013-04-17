@@ -107,6 +107,7 @@
                 scriptElem.onreadystatechange = null;
                 onSuccess( scriptElem.src + ' : success' );
               } else {
+                scriptElem.onreadystatechange = null;
                 onError( scriptElem.src + ' : fail' );
               }
             };
