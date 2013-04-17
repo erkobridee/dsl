@@ -2,10 +2,49 @@
 (function(global, oDOC) {
 
   if(typeof global.$DSL === 'undefined') {
-    // dynamic script loader
-    var dsl = {
+    
+    // dynamic script loader    
+    global.$DSL = (function() {
 
-      boot: function(scriptSrc, onSuccess, onError) {
+      function DSL() {};
+
+      // static
+      DSL.load = function(scriptSrc, onSuccess, onError) {
+
+        // TODO: check scriptSrc typeof
+
+        var handlers = checkHandlers(scriptSrc, onSuccess, onError);
+
+        boot(scriptSrc, handlers.success, handlers.error);
+
+      }
+
+      // private 
+
+      function checkHandlers(scriptSrc, onSuccess, onError) {
+        var handlers = {};
+
+        if(typeof onSuccess === 'function') {
+          handlers.success = onSuccess;
+        } else {
+          handlers.success = function() {
+            console.log( scriptSrc + ' : success');
+          };
+        }
+
+        if(typeof onError === 'function') {
+          handlers.error = onError;
+        } else {
+          handlers.error = function() {
+            console.log( scriptSrc + ' : fail');
+          };
+        }
+
+        return handlers;
+
+      }
+
+      function boot(scriptSrc, onSuccess, onError) {
 
         var handler
           , head = oDOC.head || oDOC.getElementsByTagName('head');
@@ -58,27 +97,14 @@
             oDOC.removeEventListener("DOMContentLoaded", handler, false);
             oDOC.readyState = "complete";
           }, false);
-        }   
-
-      },
-
-      load: function(scriptSrc, completeHandler, failHandler) {
-
-        function onSuccessHandler() {
-          completeHandler();
         }
-
-        function onErrorHandler() {
-          failHandler();
-        }
-
-        dsl.boot(scriptSrc, onSuccessHandler, onErrorHandler);
 
       }
 
-    };
+      return DSL;
 
-    global.$DSL = dsl;
+    })();
+
   }
 
 })(window, document);
