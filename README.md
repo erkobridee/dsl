@@ -3,6 +3,7 @@
 Dynamic Script Loader, with fallback support and check if script already available before load requested script
 
 **Compatibility:** Tested in Google Chrome, Firefox, IE6+
+**Example:** dsl.test.js
 
 ## MIT License
 
