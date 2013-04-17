@@ -8,14 +8,17 @@
       var STRING_CONST = 'string'
         , SCRIPT_CONST = 'script'
         , SCRIPT_JS_TYPE = 'text/javascript'
-        , SCRIPT_NAME_REGEX = /.+\/|\.min\.js|\.js|\?.+|\W/gi
         ;
 
       function DSL() {};
 
+      DSL.isIe = !!global.ActiveXObject;
+
       DSL.DEBUG = false;
+      DSL.JS_CHECK = true; // JS already loaded?
 
       // static
+
       DSL.load = function(scriptSrc, onSuccess, onError) {
         var typeofScript = typeof scriptSrc;
 
@@ -33,13 +36,33 @@
 
       // private 
       
+      function displayMsg(msg) {
+        if(DSL.DEBUG && (typeof msg === STRING_CONST)) { console.log(msg); }        
+      }
+
+      function executeCallback(callback) {
+        if(typeof callback === 'function') { callback(); }
+      }
+
+      function getTagByName(tagName) {
+        return oDOC.getElementsByTagName(tagName);
+      }
+
+      function getScriptName(scriptSrc) {
+        return scriptSrc.replace( /.+\/|\.min\.js|\.js|\?.+|\W/gi , '');
+      }
+
+      function resetScriptHandlers(scriptElem) {
+        scriptElem.onreadystatechange = scriptElem.onload = scriptElem.onerror = null;
+      }
+
       function checkNotAvailableScript(scriptScr) {
 
         var localScript
           , localScriptName
           , localScriptSrc
-          , scriptName = scriptScr.replace(SCRIPT_NAME_REGEX, '')
-          , scripts = oDOC.getElementsByTagName(SCRIPT_CONST)
+          , scriptName = getScriptName(scriptScr)
+          , scripts = getTagByName(SCRIPT_CONST)
           , i = (scripts.length - 1)
           , notAvailableFlag = true
           ;
@@ -52,7 +75,7 @@
 
           if((localScript.type !== SCRIPT_JS_TYPE) || (localScriptSrc.length == 0)) continue;
 
-          localScriptName = localScriptSrc.replace(SCRIPT_NAME_REGEX, '');
+          localScriptName = getScriptName(localScriptSrc);
 
           displayMsg(localScriptName + " >> " + localScriptSrc);
 
@@ -70,12 +93,13 @@
         var i = 0 
           , length = scriptArr.length
           , scriptSrc = ''
-          , notAvailableFlag
+          , notAvailableFlag = true
           ;
 
         function loadScript() {
           scriptSrc = scriptArr[i];
-          notAvailableFlag = checkNotAvailableScript(scriptSrc);
+
+          if(!DSL.isIe && DSL.JS_CHECK) notAvailableFlag = checkNotAvailableScript(scriptSrc);
 
           if(notAvailableFlag) {
             injectScript(scriptSrc, localSuccess, localError);
@@ -104,21 +128,13 @@
 
       }
 
-      function displayMsg(msg) {
-        if(DSL.DEBUG && (typeof msg === STRING_CONST)) { console.log(msg); }        
-      }
-
-      function executeCallback(callback) {
-        if(typeof callback === 'function') { callback(); }
-      }
-
       // based on: https://gist.github.com/getify/603980
       function injectScript(scriptSrc, onSuccess, onError) {
 
         var handler
-          , head = oDOC.head || oDOC.getElementsByTagName('head');
+          , head = oDOC.head || getTagByName('head');
  
-        setTimeout(function () {
+        setTimeout(function () { // inject script process
 
           if ("item" in head) { // check if ref is still a live node list
             
@@ -139,20 +155,20 @@
             scriptElem.onreadystatechange = function() {
               //if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
               if ( /de|te/.test( scriptElem.readyState ) ) {
-                scriptElem.onreadystatechange = null;
+                resetScriptHandlers(scriptElem);
                 onSuccess();
               } else {
-                scriptElem.onreadystatechange = null;
+                resetScriptHandlers(scriptElem);
                 onError();
               }
             };
           } else {  //Others            
             scriptElem.onload = function() {
-              scriptElem.onload = scriptElem.onerror = null;
+              resetScriptHandlers(scriptElem);
               onSuccess();
             };
             scriptElem.onerror = function() {
-              scriptElem.onload = scriptElem.onerror = null;
+              resetScriptHandlers(scriptElem);
               onError();
             }
           }
