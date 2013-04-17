@@ -5,7 +5,11 @@
     // dynamic script loader    
     global.$DSL = (function() {
 
-      var STRING_CONST = 'string';
+      var STRING_CONST = 'string'
+        , SCRIPT_CONST = 'script'
+        , SCRIPT_JS_TYPE = 'text/javascript'
+        , SCRIPT_NAME_REGEX = /.+\/|\.min\.js|\.js|\?.+|\W/gi
+        ;
 
       function DSL() {};
 
@@ -28,23 +32,65 @@
       }
 
       // private 
+      
+      function checkNotAvailableScript(scriptScr) {
+
+        var localScript
+          , localScriptName
+          , localScriptSrc
+          , scriptName = scriptScr.replace(SCRIPT_NAME_REGEX, '')
+          , scripts = oDOC.getElementsByTagName(SCRIPT_CONST)
+          , i = (scripts.length - 1)
+          , notAvailableFlag = true
+          ;
+
+        displayMsg("search: " + scriptName + " >> " + scriptScr);
+
+        while(i-- > 0) {
+          localScript = scripts[i];
+          localScriptSrc = localScript.src;
+
+          if((localScript.type !== SCRIPT_JS_TYPE) || (localScriptSrc.length == 0)) continue;
+
+          localScriptName = localScriptSrc.replace(SCRIPT_NAME_REGEX, '');
+
+          displayMsg(localScriptName + " >> " + localScriptSrc);
+
+          if(scriptName == localScriptName) { 
+            notAvailableFlag = false;
+            displayMsg('script already loaded: ' + scriptName);
+            break; 
+          }
+        }
+
+        return notAvailableFlag;
+      }
 
       function process(scriptArr, onSuccess, onError) {
-        var i = 0
+        var i = 0 
           , length = scriptArr.length
+          , scriptSrc = ''
+          , notAvailableFlag
           ;
 
         function loadScript() {
-          injectScript(scriptArr[i], localSuccess, localError);
+          scriptSrc = scriptArr[i];
+          notAvailableFlag = checkNotAvailableScript(scriptSrc);
+
+          if(notAvailableFlag) {
+            injectScript(scriptSrc, localSuccess, localError);
+          } else {
+            localSuccess();            
+          }
         }
 
-        function localSuccess(msg) {
-          displayMsg(msg);
+        function localSuccess() {
+          if(notAvailableFlag) displayMsg(scriptSrc + ' : success');
           executeCallback(onSuccess);
         }
 
-        function localError(msg) {
-          displayMsg(msg);
+        function localError() {
+          displayMsg(scriptSrc + ' : fail');
 
           if(i < length) {
             i++;
@@ -84,11 +130,9 @@
             head = head[0]; // reassign from live node list ref to pure node ref - avoids nasty IE bug where changes to DOM invalidate live node lists
           }
 
-          var successMsg = scriptSrc + ' : success'
-            , failMsg = scriptSrc + ' : fail'
-            , scriptElem = oDOC.createElement('script');
+          var scriptElem = oDOC.createElement(SCRIPT_CONST);
 
-          scriptElem.type = 'text/javascript';
+          scriptElem.type = SCRIPT_JS_TYPE;
 
           // based on: http://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
           if (scriptElem.readyState) { //IE
@@ -96,20 +140,20 @@
               //if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
               if ( /de|te/.test( scriptElem.readyState ) ) {
                 scriptElem.onreadystatechange = null;
-                onSuccess( successMsg );
+                onSuccess();
               } else {
                 scriptElem.onreadystatechange = null;
-                onError( failMsg );
+                onError();
               }
             };
           } else {  //Others            
             scriptElem.onload = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onSuccess( successMsg );
+              onSuccess();
             };
             scriptElem.onerror = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onError( failMsg );
+              onError();
             }
           }
 
