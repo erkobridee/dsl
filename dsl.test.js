@@ -21,6 +21,7 @@
 
       init: function() {
 
+        // load angular.js from list (fallback)
         actions.load(
           [
             'http://code.angularjs.org/unknow/angular.js', 
