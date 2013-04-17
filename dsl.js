@@ -5,12 +5,11 @@
     // dynamic script loader
     var dsl = {
 
-      load: function(scriptSrc, onSuccess) {
+      boot: function(scriptSrc, onSuccess, onError) {
 
         var handler
           , head = oDOC.head || oDOC.getElementsByTagName('head');
  
-
         setTimeout(function () {
 
           if ("item" in head) { // check if ref is still a live node list
@@ -25,21 +24,27 @@
 
           var scriptElem = oDOC.createElement('script');
           scriptElem.type = 'text/javascript';
-                    
-          scriptdone = false;
-          scriptElem.onload = scriptElem.onreadystatechange = function () {
-          
-            if ((scriptElem.readyState && scriptElem.readyState !== "complete" && scriptElem.readyState !== "loaded") || scriptdone) {
-              return false;
-            } 
 
-            scriptElem.onload = scriptElem.onreadystatechange = null;
-            scriptdone = true;
-
-            onSuccess();
-
-          };
-          
+          // based on: http://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
+          if (scriptElem.readyState) { //IE
+            scriptElem.onreadystatechange = function() {
+              if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
+                scriptElem.onreadystatechange = null;
+                onSuccess();
+              } else {
+                onError();
+              }
+            };
+          } else {  //Others            
+            scriptElem.onload = function() {
+              scriptElem.onload = scriptElem.onerror = null;
+              onSuccess();
+            };
+            scriptElem.onerror = function() {
+              scriptElem.onload = scriptElem.onerror = null;
+              onError();
+            }
+          }
 
           scriptElem.src = scriptSrc;
           head.insertBefore(scriptElem, head.firstChild);
@@ -54,6 +59,22 @@
             oDOC.readyState = "complete";
           }, false);
         }   
+
+      },
+
+      load: function(scriptSrc, completeHandler) {
+
+        function onSuccessHandler() {
+          completeHandler();
+        }
+
+        function onErrorHandler() {
+          var msg = 'script not loaded';
+          console.log(msg);
+          alert(msg);
+        }
+
+        dsl.boot(scriptSrc, onSuccessHandler, onErrorHandler);
 
       }
 
