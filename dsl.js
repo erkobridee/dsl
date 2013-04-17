@@ -5,22 +5,25 @@
     // dynamic script loader    
     global.$DSL = (function() {
 
+      var STRING_CONST = 'string';
+
       function DSL() {};
 
       DSL.DEBUG = false;
 
       // static
       DSL.load = function(scriptSrc, onSuccess, onError) {
+        var typeofScript = typeof scriptSrc;
 
-        if(typeof scriptSrc === 'string') {
+        if(typeofScript === STRING_CONST) {
           
           process([scriptSrc], onSuccess, onError);
         
-        } else if((typeof scriptSrc === 'object') && (scriptSrc instanceof Array)) {
+        } else if((typeofScript === 'object') && (scriptSrc instanceof Array)) {
           
           process(scriptSrc, onSuccess, onError);
         
-        } else { console.log(scriptSrc + ' : unknown'); }
+        } else { displayMsg(scriptSrc + ' : unknown'); }
 
       }
 
@@ -56,7 +59,7 @@
       }
 
       function displayMsg(msg) {
-        if(DSL.DEBUG && (typeof msg === 'string')) { console.log(msg); }        
+        if(DSL.DEBUG && (typeof msg === STRING_CONST)) { console.log(msg); }        
       }
 
       function executeCallback(callback) {
@@ -90,7 +93,8 @@
           // based on: http://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
           if (scriptElem.readyState) { //IE
             scriptElem.onreadystatechange = function() {
-              if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
+              //if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
+              if ( /de|te/.test( scriptElem.readyState ) ) {
                 scriptElem.onreadystatechange = null;
                 onSuccess( successMsg );
               } else {
