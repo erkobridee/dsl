@@ -62,16 +62,14 @@
 
       },
 
-      load: function(scriptSrc, completeHandler) {
+      load: function(scriptSrc, completeHandler, failHandler) {
 
         function onSuccessHandler() {
           completeHandler();
         }
 
         function onErrorHandler() {
-          var msg = 'script not loaded';
-          console.log(msg);
-          alert(msg);
+          failHandler();
         }
 
         dsl.boot(scriptSrc, onSuccessHandler, onErrorHandler);

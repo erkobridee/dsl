@@ -5,21 +5,12 @@
 
     var actions = {
       
-      load: function(scriptUrl, onCompleted) {
+      load: function(scriptUrl, onCompleted, onFailed) {
         $DSL.load(
           scriptUrl,
-          onCompleted
+          onCompleted,
+          onFailed
         );
-      },
-
-      checkUndefined: function(objectName) {
-        var flag = false;
-        
-        if(typeof window[objectName] === 'undefined') {
-          flag = true;
-        } 
-
-        return flag;
       },
 
       finish: function() {
@@ -32,30 +23,20 @@
         var scriptUrl = 'http://code.angularjs.org/unknow/angular.js';
 
         actions.load(
-          scriptUrl,
-          function() {
-            actions.finish();
-          }
-        );
-
-        if(actions.checkUndefined('angular')) {         
-          console.log('call fallback js');
-
-          // fallback
-          scriptUrl = 'http://code.angularjs.org/1.1.4/angular.js';
+          'http://code.angularjs.org/unknow/angular.js',
+          actions.finish,
           actions.load(
-            scriptUrl, 
+            'http://code.angularjs.org/1.1.4/angular.js',
+            actions.finish,
             function() {
-              actions.finish();
+              alert('PANIC!');
             }
-          );
-        } else {
-          actions.finish();
-        }
+          )
+        );
 
       }
     };
-
+    
     actions.init();
 
   }
