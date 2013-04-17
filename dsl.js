@@ -97,7 +97,10 @@
             head = head[0]; // reassign from live node list ref to pure node ref - avoids nasty IE bug where changes to DOM invalidate live node lists
           }
 
-          var scriptElem = oDOC.createElement('script');
+          var successMsg = scriptSrc + ' : success'
+            , failMsg = scriptSrc + ' : fail'
+            , scriptElem = oDOC.createElement('script');
+
           scriptElem.type = 'text/javascript';
 
           // based on: http://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
@@ -105,20 +108,20 @@
             scriptElem.onreadystatechange = function() {
               if (scriptElem.readyState == "loaded" || scriptElem.readyState == "complete") {
                 scriptElem.onreadystatechange = null;
-                onSuccess( scriptElem.src + ' : success' );
+                onSuccess( successMsg );
               } else {
                 scriptElem.onreadystatechange = null;
-                onError( scriptElem.src + ' : fail' );
+                onError( failMsg );
               }
             };
           } else {  //Others            
             scriptElem.onload = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onSuccess( scriptElem.src + ' : success' );
+              onSuccess( successMsg );
             };
             scriptElem.onerror = function() {
               scriptElem.onload = scriptElem.onerror = null;
-              onError( scriptElem.src + ' : fail' );
+              onError( failMsg );
             }
           }
 
