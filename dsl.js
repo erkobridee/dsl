@@ -14,11 +14,11 @@
 
         if(typeof scriptSrc === 'string') {
           
-          scriptSrcString(scriptSrc, onSuccess, onError);
+          process([scriptSrc], onSuccess, onError);
         
         } else if((typeof scriptSrc === 'object') && (scriptSrc instanceof Array)) {
           
-          scriptSrcArray(scriptSrc, onSuccess, onError);
+          process(scriptSrc, onSuccess, onError);
         
         } else { console.log(scriptSrc + ' : unknown'); }
 
@@ -26,29 +26,13 @@
 
       // private 
 
-      function scriptSrcString(scriptSrc, onSuccess, onError) {
-
-        function localSuccess(msg) {
-          displayMsg(msg);
-          executeCallback(onSuccess);
-        }
-
-        function localError(msg) {
-          displayMsg(msg);
-          executeCallback(onError);
-        }
-
-        boot(scriptSrc, localSuccess, localError);
-
-      }
-
-      function scriptSrcArray(scriptArr, onSuccess, onError) {
+      function process(scriptArr, onSuccess, onError) {
         var i = 0
           , length = scriptArr.length
           ;
 
         function loadScript() {
-          boot(scriptArr[i], localSuccess, localError);
+          injectScript(scriptArr[i], localSuccess, localError);
         }
 
         function localSuccess(msg) {
@@ -80,7 +64,7 @@
       }
 
       // based on: https://gist.github.com/getify/603980
-      function boot(scriptSrc, onSuccess, onError) {
+      function injectScript(scriptSrc, onSuccess, onError) {
 
         var handler
           , head = oDOC.head || oDOC.getElementsByTagName('head');
