@@ -5,12 +5,11 @@
     // dynamic script loader    
     global.$DSL = (function() {
 
-      var STRING_CONST = 'string'
-        , SCRIPT_CONST = 'script'
-        , SCRIPT_JS_TYPE = 'text/javascript'
-        ;
+      var STRING_CONST = 'string',
+          SCRIPT_CONST = 'script',
+          SCRIPT_JS_TYPE = 'text/javascript';
 
-      function DSL() {};
+      function DSL() {}
 
       DSL.isIe = !!global.ActiveXObject;
 
@@ -32,7 +31,7 @@
         
         } else { displayMsg(scriptSrc + ' : unknown'); }
 
-      }
+      };
 
       // private 
       
@@ -58,14 +57,13 @@
 
       function checkNotAvailableScript(scriptScr) {
 
-        var localScript
-          , localScriptName
-          , localScriptSrc
-          , scriptName = getScriptName(scriptScr)
-          , scripts = getTagByName(SCRIPT_CONST)
-          , i = (scripts.length - 1)
-          , notAvailableFlag = true
-          ;
+        var localScript,
+            localScriptName,
+            localScriptSrc,
+            scriptName = getScriptName(scriptScr),
+            scripts = getTagByName(SCRIPT_CONST),
+            i = (scripts.length - 1),
+            notAvailableFlag = true;
 
         displayMsg("search: " + scriptName + " >> " + scriptScr);
 
@@ -73,7 +71,7 @@
           localScript = scripts[i];
           localScriptSrc = localScript.src;
 
-          if((localScript.type !== SCRIPT_JS_TYPE) || (localScriptSrc.length == 0)) continue;
+          if((localScript.type !== SCRIPT_JS_TYPE) || (localScriptSrc.length === 0)) continue;
 
           localScriptName = getScriptName(localScriptSrc);
 
@@ -90,11 +88,11 @@
       }
 
       function process(scriptArr, onSuccess, onError) {
-        var i = 0 
-          , length = scriptArr.length
-          , scriptSrc = ''
-          , notAvailableFlag = true
-          ;
+        
+        var i = 0,
+            length = scriptArr.length,
+            scriptSrc = '',
+            notAvailableFlag = true;
 
         function loadScript() {
           scriptSrc = scriptArr[i];
@@ -131,8 +129,8 @@
       // based on: https://gist.github.com/getify/603980
       function injectScript(scriptSrc, onSuccess, onError) {
 
-        var handler
-          , head = oDOC.head || getTagByName('head');
+        var handler,
+            head = oDOC.head || getTagByName('head');
  
         setTimeout(function () { // inject script process
 
@@ -170,7 +168,7 @@
             scriptElem.onerror = function() {
               resetScriptHandlers(scriptElem);
               onError();
-            }
+            };
           }
 
           scriptElem.src = scriptSrc;
@@ -179,7 +177,7 @@
         }, 0);
          
         // required: shim for FF <= 3.5 not having document.readyState
-        if (oDOC.readyState == null && oDOC.addEventListener) {
+        if (oDOC.readyState === null && oDOC.addEventListener) {
           oDOC.readyState = "loading";
           oDOC.addEventListener("DOMContentLoaded", handler = function () {
             oDOC.removeEventListener("DOMContentLoaded", handler, false);
